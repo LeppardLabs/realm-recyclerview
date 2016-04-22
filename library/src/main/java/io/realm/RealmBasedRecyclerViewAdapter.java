@@ -357,8 +357,9 @@ public abstract class RealmBasedRecyclerViewAdapter
     }
 
     /**
-     * Method that creates the header string that should be used. Override this method to have
-     * a custom header.
+     * Method that creates the header string from the defined header column. The header column
+     * must be of type String. If it is not you must override {@Link createHeaderFromRow()}.
+     * Override this method to have a custom header.
      */
     public String createHeaderFromColumnValue(Object columnValue) {
         String result = null;
@@ -374,6 +375,15 @@ public abstract class RealmBasedRecyclerViewAdapter
 
         return result;
 
+    }
+
+    /**
+     * Method that creates the header string from the row. By default it uses
+     * {@Link createHeaderFromColumnValue() to format the header. Override this method to use a header
+     * column of a type other than String.
+     */
+    public String createHeaderFromRow(Object rawHeader, T result, long headerIndex) {
+        return createHeaderFromColumnValue(result);
     }
 
     private List getIdsOfRealmResults() {
@@ -459,10 +469,11 @@ public abstract class RealmBasedRecyclerViewAdapter
                     rawHeader = ((RealmObjectProxy) result)
                             .realmGet$proxyState().getRow$realm().getLong(headerIndex);
                 } else {
-                    throw new IllegalStateException("columnValue type not supported");
+					// Probably going to need to override createHeaderFromColumnValue(...)
+                    rawHeader = null;
                 }
 
-                String header = createHeaderFromColumnValue(rawHeader);
+                String header = createHeaderFromRow(rawHeader, (T) result, headerIndex);
                 if (!TextUtils.equals(lastHeader, header)) {
                     // Insert new header view and update section data.
                     sectionFirstPosition = i + headerCount;
